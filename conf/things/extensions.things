@@ -1,0 +1,13 @@
+// Завдання 8.1: розумний димер для кухні з плавним регулюванням.
+Thing mqtt:topic:kitchen_dimmer "Димер кухні" (mqtt:broker:localBroker) @ "Кухня" {
+    Channels:
+        Type switch : power "Увімк/Вимк" [
+            stateTopic="smarthome/kitchen_dimmer/state",
+            commandTopic="smarthome/kitchen_dimmer/set"
+        ]
+        Type dimmer : level "Рівень" [
+            stateTopic="smarthome/kitchen_dimmer/level",
+            commandTopic="smarthome/kitchen_dimmer/level/set",
+            min=0, max=100
+        ]
+}

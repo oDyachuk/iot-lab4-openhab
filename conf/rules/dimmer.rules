@@ -1,0 +1,24 @@
+// Завдання 8.1, п. 5: правила автоматизації для димера кухні.
+
+rule "Димер кухні: вечірнє приглушене світло"
+when
+    Time cron "0 30 19 * * ?" // 19:30
+then
+    logInfo("Dimmer", "Вечірній режим: димер кухні до 40 %")
+    KitchenDimmer.sendCommand(40)
+end
+
+rule "Димер кухні: вимкнення на ніч"
+when
+    Time cron "0 0 23 * * ?" // 23:00
+then
+    logInfo("Dimmer", "Нічний режим: димер кухні вимкнено")
+    KitchenDimmer.sendCommand(0)
+end
+
+rule "Димер кухні: зміна рівня"
+when
+    Item KitchenDimmer changed
+then
+    logInfo("Dimmer", "Рівень димера кухні: " + KitchenDimmer.state)
+end

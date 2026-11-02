@@ -13,6 +13,10 @@ sitemap demo label="Розумний будинок - Практична роб�
         Switch item=SmartSocket icon="socket"
     }
 
+    Frame label="Сценарії" icon="scene" {
+        Selection item=SceneMode icon="scene" mappings=[MORNING="Ранок", DAY="День", EVENING="Вечір", NIGHT="Ніч"]
+    }
+
     Frame label="Освітлення за кімнатами" icon="lightbulb" {
         Text label="Вітальня" icon="sofa" {
             Switch item=LivingRoomLight icon="lightbulb"
@@ -27,6 +31,8 @@ sitemap demo label="Розумний будинок - Практична роб�
         Text label="Кухня" icon="kitchen" {
             Switch item=KitchenLight icon="lightbulb"
             Slider item=KitchenBrightness icon="slider"
+            Switch item=KitchenDimmerPower icon="lightbulb"
+            Slider item=KitchenDimmer icon="slider"
         }
     }
 

@@ -1,0 +1,46 @@
+// Завдання 8.2: сценарні режими "Ранок", "День", "Вечір", "Ніч".
+
+rule "Ініціалізація сценарію"
+when
+    System started
+then
+    if (SceneMode.state == NULL || SceneMode.state == UNDEF) {
+        SceneMode.postUpdate("DAY")
+    }
+end
+
+rule "Сценарні режими"
+when
+    Item SceneMode received command
+then
+    val scene = receivedCommand.toString
+    logInfo("Scenes", "Активація сценарію: " + scene)
+
+    switch (scene) {
+        case "MORNING": {
+            // Ранковий режим
+            AllLights.sendCommand(ON)
+            LivingRoomBrightness.sendCommand(80)
+            TargetTemperature.sendCommand(22.0)
+        }
+        case "DAY": {
+            // Денний режим
+            AllLights.sendCommand(OFF)
+            TargetTemperature.sendCommand(20.0)
+        }
+        case "EVENING": {
+            // Вечірній режим
+            LivingRoomLight.sendCommand(ON)
+            LivingRoomBrightness.sendCommand(60)
+            TargetTemperature.sendCommand(22.5)
+        }
+        case "NIGHT": {
+            // Нічний режим
+            AllLights.sendCommand(OFF)
+            TargetTemperature.sendCommand(19.0)
+        }
+    }
+
+    // Запам'ятовуємо активний сценарій
+    SceneMode.postUpdate(scene)
+end

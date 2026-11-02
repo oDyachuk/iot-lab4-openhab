@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import random
 import threading
 import time
@@ -10,7 +9,6 @@ LIGHTS = ["living_room_light", "bedroom_light", "kitchen_light"]
 
 
 def make_client(client_id):
-    """paho-mqtt 2.x вимагає версію callback API, 1.x її не знає."""
     try:
         return mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id)
     except AttributeError:
@@ -31,7 +29,11 @@ class SmartHomeSimulator:
             "motion_detector": {"motion": False, "battery": 95},
             "door_sensor": {"open": False, "battery": 88},
             "smart_socket": {"power": False, "consumption": 0},
+            # Завдання 8.1: розумний димер кухні
+            "kitchen_dimmer": {"level": 0, "target": 0, "last_level": 100},
         }
+        self.dimmer_lock = threading.Lock()
+        self.dimmer_ramping = False
 
     # ------------------------------------------------------------------ MQTT
     def publish(self, topic, payload):
@@ -46,6 +48,8 @@ class SmartHomeSimulator:
     def on_message(self, client, userdata, msg):
         topic_parts = msg.topic.split("/")
         device = topic_parts[1]
+        # 3 частини: smarthome/<пристрій>/set
+        # 4 частини: smarthome/<пристрій>/<канал>/set
         channel = topic_parts[2] if len(topic_parts) == 4 else None
         command = msg.payload.decode()
 
@@ -77,6 +81,44 @@ class SmartHomeSimulator:
                 self.devices_state[device]["consumption"] = 0
             self.publish_device_state(device)
 
+        elif device == "kitchen_dimmer":
+            dimmer = self.devices_state[device]
+            if command == "ON":
+                self.set_dimmer_target(dimmer["last_level"] or 100)
+            elif command == "OFF":
+                self.set_dimmer_target(0)
+            elif command.replace(".", "", 1).isdigit():
+                self.set_dimmer_target(max(0, min(100, int(float(command)))))
+
+    def set_dimmer_target(self, target):
+        """Задає цільовий рівень димера й запускає плавну зміну (якщо вона ще не йде)."""
+        with self.dimmer_lock:
+            self.devices_state["kitchen_dimmer"]["target"] = target
+            if target > 0:
+                # Запам'ятовуємо рівень, до якого повернемось після команди ON
+                self.devices_state["kitchen_dimmer"]["last_level"] = target
+            if self.dimmer_ramping:
+                return
+            self.dimmer_ramping = True
+        threading.Thread(target=self.dimmer_ramp, daemon=True).start()
+
+    def dimmer_ramp(self, step=5, delay=0.3):
+        """Плавна зміна рівня: крок 5 % кожні 0.3 с аж до цільового значення."""
+        dimmer = self.devices_state["kitchen_dimmer"]
+        while True:
+            with self.dimmer_lock:
+                level, target = dimmer["level"], dimmer["target"]
+                if level == target:
+                    self.dimmer_ramping = False
+                    break
+                if level < target:
+                    level = min(target, level + step)
+                else:
+                    level = max(target, level - step)
+                dimmer["level"] = level
+            self.publish_device_state("kitchen_dimmer")
+            time.sleep(delay)
+
     def connect(self):
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -101,6 +143,10 @@ class SmartHomeSimulator:
         elif device == "smart_socket":
             self.publish("smarthome/smart_socket/state", "ON" if state["power"] else "OFF")
             self.publish("smarthome/smart_socket/power", state["consumption"])
+
+        elif device == "kitchen_dimmer":
+            self.publish("smarthome/kitchen_dimmer/state", "ON" if state["level"] > 0 else "OFF")
+            self.publish("smarthome/kitchen_dimmer/level", state["level"])
 
         elif device == "motion_detector":
             self.publish("smarthome/motion_detector/state", "ON" if state["motion"] else "OFF")

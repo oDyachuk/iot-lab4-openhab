@@ -1,0 +1,11 @@
+// Завдання 8.1: розумний димер кухні
+Switch KitchenDimmerPower "Димер кухні [%s]" <lightbulb> (Lights, Kitchen) {
+    channel="mqtt:topic:kitchen_dimmer:power"
+}
+
+Dimmer KitchenDimmer "Рівень димера кухні [%d %%]" <slider> (Lights, Kitchen) {
+    channel="mqtt:topic:kitchen_dimmer:level"
+}
+
+// Завдання 8.2: сценарні режими (MORNING, DAY, EVENING, NIGHT)
+String SceneMode "Сценарій [%s]" <scene> (SmartHome)
