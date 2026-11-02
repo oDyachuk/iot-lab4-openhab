@@ -99,7 +99,7 @@ docker exec mqtt-broker mosquitto_sub -t "smarthome/#" -v
 
 Файл [`conf/items/smarthome.items`](conf/items/smarthome.items): 8 груп, 13 Items, прив'язаних до каналів, і 4 віртуальні Items (`AllLights`, `HomeMode`, `ComfortIndex`, `LastActivity`).
 
-![Items](screenshots/04-items.jpg)
+![Items](screenshots/04-items-1.jpg)
 
 *Рис. 4. Сторінка Settings → Items.*
 
