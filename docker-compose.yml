@@ -1,0 +1,25 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+
+  openhab:
+    image: openhab/openhab:4.1.0
+    container_name: openhab
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./conf:/openhab/conf
+      - ./userdata:/openhab/userdata
+      - ./addons:/openhab/addons
+    environment:
+      JAVA_OPTS: "-Duser.timezone=Europe/Kiev"
+      OPENHAB_HTTP_PORT: "8080"
