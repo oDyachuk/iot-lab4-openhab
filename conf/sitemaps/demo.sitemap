@@ -1,0 +1,50 @@
+sitemap demo label="Розумний будинок - Практична робота" {
+
+    Frame label="Огляд" icon="overview" {
+        Text item=HomeMode icon="house"
+        Text item=ComfortIndex icon="line"
+        Text item=CurrentTemperature icon="temperature"
+        Text item=LastActivity icon="clock"
+    }
+
+    Frame label="Швидкі дії" icon="settings" {
+        Switch item=AllLights icon="lightbulb"
+        Setpoint item=TargetTemperature icon="temperature" minValue=16 maxValue=26 step=0.5
+        Switch item=SmartSocket icon="socket"
+    }
+
+    Frame label="Освітлення за кімнатами" icon="lightbulb" {
+        Text label="Вітальня" icon="sofa" {
+            Switch item=LivingRoomLight icon="lightbulb"
+            Slider item=LivingRoomBrightness icon="slider"
+        }
+
+        Text label="Спальня" icon="bedroom" {
+            Switch item=BedroomLight icon="lightbulb"
+            Slider item=BedroomBrightness icon="slider"
+        }
+
+        Text label="Кухня" icon="kitchen" {
+            Switch item=KitchenLight icon="lightbulb"
+            Slider item=KitchenBrightness icon="slider"
+        }
+    }
+
+    Frame label="Клімат-контроль" icon="heating" {
+        Text item=CurrentTemperature icon="temperature"
+        Setpoint item=TargetTemperature icon="temperature" minValue=16 maxValue=26 step=0.5
+        Switch item=Heating icon="fire"
+        Text item=ComfortIndex icon="line"
+    }
+
+    Frame label="Датчики безпеки" icon="shield" {
+        Switch item=MotionDetector icon="motion"
+        Text item=DoorSensor icon="door"
+        Text item=LastActivity icon="clock"
+    }
+
+    Frame label="Енергоспоживання" icon="energy" {
+        Switch item=SmartSocket icon="socket"
+        Text item=SocketConsumption icon="energy"
+    }
+}
