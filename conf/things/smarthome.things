@@ -1,0 +1,89 @@
+Bridge mqtt:broker:localBroker "Local MQTT Broker" [
+    host="mosquitto",
+    port=1883,
+    secure=false,
+    clientID="openhabmqtt"
+] {
+
+    // Освітлення
+    Thing topic living_room_light "Світло у вітальні" @ "Вітальня" {
+        Channels:
+            Type switch : power "Увімк/Вимк" [
+                stateTopic="smarthome/living_room_light/state",
+                commandTopic="smarthome/living_room_light/set"
+            ]
+            Type dimmer : brightness "Яскравість" [
+                stateTopic="smarthome/living_room_light/brightness",
+                commandTopic="smarthome/living_room_light/brightness/set",
+                min=0, max=100
+            ]
+    }
+
+    Thing topic bedroom_light "Світло у спальні" @ "Спальня" {
+        Channels:
+            Type switch : power "Увімк/Вимк" [
+                stateTopic="smarthome/bedroom_light/state",
+                commandTopic="smarthome/bedroom_light/set"
+            ]
+            Type dimmer : brightness "Яскравість" [
+                stateTopic="smarthome/bedroom_light/brightness",
+                commandTopic="smarthome/bedroom_light/brightness/set",
+                min=0, max=100
+            ]
+    }
+
+    Thing topic kitchen_light "Світло на кухні" @ "Кухня" {
+        Channels:
+            Type switch : power "Увімк/Вимк" [
+                stateTopic="smarthome/kitchen_light/state",
+                commandTopic="smarthome/kitchen_light/set"
+            ]
+            Type dimmer : brightness "Яскравість" [
+                stateTopic="smarthome/kitchen_light/brightness",
+                commandTopic="smarthome/kitchen_light/brightness/set",
+                min=0, max=100
+            ]
+    }
+
+    // Термостат
+    Thing topic thermostat "Термостат" @ "Вітальня" {
+        Channels:
+            Type number : current_temp "Поточна температура" [
+                stateTopic="smarthome/thermostat/current_temp"
+            ]
+            Type number : target_temp "Цільова температура" [
+                stateTopic="smarthome/thermostat/target_temp",
+                commandTopic="smarthome/thermostat/set"
+            ]
+            Type switch : heating "Обігрів" [
+                stateTopic="smarthome/thermostat/heating"
+            ]
+    }
+
+    // Датчики
+    Thing topic motion_sensor "Датчик руху" @ "Коридор" {
+        Channels:
+            Type switch : motion "Рух виявлено" [
+                stateTopic="smarthome/motion_detector/state"
+            ]
+    }
+
+    Thing topic door_sensor "Датчик дверей" @ "Вхід" {
+        Channels:
+            Type contact : state "Стан дверей" [
+                stateTopic="smarthome/door_sensor/state"
+            ]
+    }
+
+    // Розумна розетка
+    Thing topic smart_socket "Розумна розетка" @ "Кухня" {
+        Channels:
+            Type switch : power "Увімк/Вимк" [
+                stateTopic="smarthome/smart_socket/state",
+                commandTopic="smarthome/smart_socket/set"
+            ]
+            Type number : consumption "Споживання" [
+                stateTopic="smarthome/smart_socket/power"
+            ]
+    }
+}

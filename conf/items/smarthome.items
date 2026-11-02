@@ -1,0 +1,73 @@
+// Основні групи
+Group SmartHome "Розумний будинок" <house>
+Group Lights "Освітлення" <lightbulb> (SmartHome)
+Group Climate "Клімат" <heating> (SmartHome)
+Group Sensors "Датчики" <sensor> (SmartHome)
+Group Appliances "Прилади" <socket> (SmartHome)
+
+// Кімнати
+Group LivingRoom "Вітальня" <sofa> (SmartHome)
+Group Bedroom "Спальня" <bedroom> (SmartHome)
+Group Kitchen "Кухня" <kitchen> (SmartHome)
+
+// Освітлення
+Switch LivingRoomLight "Світло у вітальні [%s]" <lightbulb> (Lights, LivingRoom) {
+    channel="mqtt:topic:localBroker:living_room_light:power"
+}
+
+Dimmer LivingRoomBrightness "Яскравість вітальні [%d %%]" <slider> (Lights, LivingRoom) {
+    channel="mqtt:topic:localBroker:living_room_light:brightness"
+}
+
+Switch BedroomLight "Світло у спальні [%s]" <lightbulb> (Lights, Bedroom) {
+    channel="mqtt:topic:localBroker:bedroom_light:power"
+}
+
+Dimmer BedroomBrightness "Яскравість спальні [%d %%]" <slider> (Lights, Bedroom) {
+    channel="mqtt:topic:localBroker:bedroom_light:brightness"
+}
+
+Switch KitchenLight "Світло на кухні [%s]" <lightbulb> (Lights, Kitchen) {
+    channel="mqtt:topic:localBroker:kitchen_light:power"
+}
+
+Dimmer KitchenBrightness "Яскравість кухні [%d %%]" <slider> (Lights, Kitchen) {
+    channel="mqtt:topic:localBroker:kitchen_light:brightness"
+}
+
+// Клімат
+Number CurrentTemperature "Поточна температура [%.1f °C]" <temperature> (Climate, LivingRoom) {
+    channel="mqtt:topic:localBroker:thermostat:current_temp"
+}
+
+Number TargetTemperature "Цільова температура [%.1f °C]" <temperature> (Climate, LivingRoom) {
+    channel="mqtt:topic:localBroker:thermostat:target_temp"
+}
+
+Switch Heating "Обігрів [%s]" <fire> (Climate, LivingRoom) {
+    channel="mqtt:topic:localBroker:thermostat:heating"
+}
+
+// Датчики
+Switch MotionDetector "Датчик руху [%s]" <motion> (Sensors) {
+    channel="mqtt:topic:localBroker:motion_sensor:motion"
+}
+
+Contact DoorSensor "Датчик дверей [%s]" <door> (Sensors) {
+    channel="mqtt:topic:localBroker:door_sensor:state"
+}
+
+// Прилади
+Switch SmartSocket "Розумна розетка [%s]" <socket> (Appliances, Kitchen) {
+    channel="mqtt:topic:localBroker:smart_socket:power"
+}
+
+Number SocketConsumption "Споживання розетки [%.0f Вт]" <energy> (Appliances, Kitchen) {
+    channel="mqtt:topic:localBroker:smart_socket:consumption"
+}
+
+// Віртуальні Items для автоматизації
+Switch AllLights "Все освітлення [%s]" <lightbulb> (SmartHome)
+String HomeMode "Режим будинку [%s]" <house> (SmartHome)
+Number ComfortIndex "Індекс комфорту [%.1f]" <line> (SmartHome)
+DateTime LastActivity "Остання активність [%1$td.%1$tm.%1$tY %1$tH:%1$tM]" <clock> (SmartHome)
