@@ -120,7 +120,7 @@ docker exec mqtt-broker mosquitto_sub -t "smarthome/#" -v
 
 Файл [`conf/sitemaps/demo.sitemap`](conf/sitemaps/demo.sitemap): огляд, швидкі дії, сценарії, освітлення за кімнатами, клімат, датчики безпеки, енергоспоживання. Відкривається за адресою <http://localhost:8080/basicui/app?sitemap=demo>.
 
-![Sitemap](screenshots/06-sitemap.jpg)
+![Sitemap](screenshots/06-sitemap.jpg.jpg)
 
 *Рис. 6. Основний інтерфейс Sitemap.*
 
