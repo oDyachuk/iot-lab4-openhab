@@ -1,0 +1,12 @@
+rule "Ініціалізація системи"
+when
+    System started
+then
+    if (HomeMode.state == NULL || HomeMode.state == UNDEF) {
+        HomeMode.postUpdate("HOME")
+    }
+    if (LastActivity.state == NULL || LastActivity.state == UNDEF) {
+        LastActivity.postUpdate(new DateTimeType())
+    }
+    logInfo("Init", "Систему розумного будинку запущено")
+end

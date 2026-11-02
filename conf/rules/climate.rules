@@ -1,0 +1,64 @@
+rule "Розумне керування температурою"
+when
+    Item CurrentTemperature received update or
+    Item MotionDetector changed or
+    Time cron "0 0/10 * * * ?" // Кожні 10 хвилин
+then
+    if (CurrentTemperature.state instanceof DecimalType && TargetTemperature.state instanceof DecimalType) {
+        val currentTemp = CurrentTemperature.state as DecimalType
+        val targetTemp = TargetTemperature.state as DecimalType
+
+        // Присутність: зараз є рух або остання активність була менше 30 хвилин тому
+        var isPresent = (MotionDetector.state == ON)
+        if (!isPresent && LastActivity.state instanceof DateTimeType) {
+            isPresent = (LastActivity.state as DateTimeType).zonedDateTime.isAfter(now.minusMinutes(30))
+        }
+
+        var desiredTemp = 21.0 // Базова температура
+        val hour = now.getHour()
+
+        // Налаштування за часом доби
+        if (hour >= 6 && hour <= 8) {
+            desiredTemp = 22.0 // Ранок
+        } else if (hour >= 9 && hour <= 17) {
+            desiredTemp = 20.0 // День (економія)
+        } else if (hour >= 18 && hour <= 22) {
+            desiredTemp = 22.5 // Вечір (комфорт)
+        } else {
+            desiredTemp = 19.0 // Ніч (економія)
+        }
+
+        // Корекція за присутністю
+        if (!isPresent) {
+            desiredTemp = desiredTemp - 2.0
+        }
+
+        // Застосування нової температури
+        if (Math::abs(targetTemp.doubleValue - desiredTemp) > 0.5) {
+            logInfo("Climate",
+                String::format("Зміна температури: %.1f°C -> %.1f°C (присутність: %s)",
+                    targetTemp.doubleValue, desiredTemp, isPresent))
+            TargetTemperature.sendCommand(desiredTemp)
+        }
+
+        // Розрахунок індексу комфорту
+        val tempDiff = Math::abs(currentTemp.doubleValue - desiredTemp)
+        val comfort = Math::max(0.0, 10.0 - tempDiff * 2.0)
+        ComfortIndex.postUpdate(comfort)
+    }
+end
+
+rule "Сповіщення про аномальну температуру"
+when
+    Item CurrentTemperature received update
+then
+    if (CurrentTemperature.state instanceof DecimalType) {
+        val temp = CurrentTemperature.state as DecimalType
+
+        if (temp.doubleValue < 15.0) {
+            logWarn("Climate", "УВАГА: Дуже низька температура: " + temp + "°C")
+        } else if (temp.doubleValue > 30.0) {
+            logWarn("Climate", "УВАГА: Дуже висока температура: " + temp + "°C")
+        }
+    }
+end

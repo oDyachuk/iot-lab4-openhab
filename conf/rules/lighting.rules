@@ -1,0 +1,75 @@
+rule "Автоматичне включення світла при русі"
+when
+    Item MotionDetector changed to ON
+then
+    logInfo("Lighting", "Виявлено рух - включення світла")
+
+    // Перевірка часу доби
+    var hour = now.getHour()
+
+    if (hour >= 6 && hour < 22) {
+        // Денний режим - яскраве світло
+        LivingRoomLight.sendCommand(ON)
+        LivingRoomBrightness.sendCommand(80)
+        logInfo("Lighting", "Денний режим освітлення")
+    } else {
+        // Нічний режим - приглушене світло
+        LivingRoomLight.sendCommand(ON)
+        LivingRoomBrightness.sendCommand(30)
+        logInfo("Lighting", "Нічний режим освітлення")
+    }
+
+    // Автоматичне вимкнення через 5 хвилин
+    createTimer(now.plusMinutes(5), [|
+        if (MotionDetector.state == OFF) {
+            LivingRoomLight.sendCommand(OFF)
+            logInfo("Lighting", "Автоматичне вимкнення світла")
+        }
+    ])
+end
+
+rule "Керування всім освітленням"
+when
+    Item AllLights received command
+then
+    val command = receivedCommand
+    logInfo("Lighting", "Команда для всього освітлення: " + command)
+
+    LivingRoomLight.sendCommand(command)
+    BedroomLight.sendCommand(command)
+    KitchenLight.sendCommand(command)
+
+    if (command == ON) {
+        LivingRoomBrightness.sendCommand(70)
+        BedroomBrightness.sendCommand(70)
+        KitchenBrightness.sendCommand(70)
+    }
+end
+
+rule "Вечірній режим освітлення"
+when
+    Time cron "0 0 19 * * ?" // 19:00
+then
+    logInfo("Lighting", "Активація вечірнього режиму")
+
+    // Тепле приглушене освітлення
+    LivingRoomLight.sendCommand(ON)
+    LivingRoomBrightness.sendCommand(60)
+
+    BedroomLight.sendCommand(ON)
+    BedroomBrightness.sendCommand(40)
+
+    HomeMode.postUpdate("EVENING")
+end
+
+rule "Нічний режим"
+when
+    Time cron "0 0 23 * * ?" // 23:00
+then
+    logInfo("Lighting", "Активація нічного режиму")
+
+    // Вимкнення основного освітлення
+    AllLights.sendCommand(OFF)
+
+    HomeMode.postUpdate("NIGHT")
+end

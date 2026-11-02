@@ -1,0 +1,81 @@
+import java.time.Duration
+
+rule "Відстеження активності"
+when
+    Item MotionDetector changed to ON or
+    Item DoorSensor changed or
+    Item AllLights received command or
+    Item LivingRoomLight received command or
+    Item BedroomLight received command or
+    Item KitchenLight received command
+then
+    LastActivity.postUpdate(new DateTimeType())
+    logInfo("Security", "Активність зафіксована: " + triggeringItem.name)
+end
+
+rule "Визначення режиму відсутності"
+when
+    Time cron "0 0/15 * * * ?" // Кожні 15 хвилин
+then
+    if (LastActivity.state instanceof DateTimeType) {
+        val lastActivity = LastActivity.state as DateTimeType
+        val minutesAgo = Duration.between(lastActivity.zonedDateTime, now).toMinutes()
+
+        if (minutesAgo > 120 && HomeMode.state != "AWAY") {
+            logInfo("Security", "Активація режиму відсутності (без активності " + minutesAgo + " хв)")
+            HomeMode.postUpdate("AWAY")
+
+            // Енергоощадження
+            AllLights.sendCommand(OFF)
+            TargetTemperature.sendCommand(18.0)
+
+        } else if (minutesAgo < 5 && HomeMode.state == "AWAY") {
+            logInfo("Security", "Повернення додому виявлено")
+            HomeMode.postUpdate("HOME")
+
+            // Відновлення комфортних умов
+            TargetTemperature.sendCommand(21.0)
+        }
+    }
+end
+
+rule "Контроль дверей"
+when
+    Item DoorSensor changed to OPEN
+then
+    logInfo("Security", "Двері відчинено")
+
+    if (HomeMode.state == "AWAY") {
+        logWarn("Security", "УВАГА: Двері відчинено в режимі відсутності!")
+
+        // Включення всього освітлення як сигнал
+        AllLights.sendCommand(ON)
+        LivingRoomBrightness.sendCommand(100)
+    }
+
+    // Нагадування закрити двері через 5 хвилин
+    createTimer(now.plusMinutes(5), [|
+        if (DoorSensor.state == OPEN) {
+            logWarn("Security", "Двері відчинені більше 5 хвилин!")
+        }
+    ])
+end
+
+rule "Моніторинг енергоспоживання"
+when
+    Item SocketConsumption received update
+then
+    if (SocketConsumption.state instanceof DecimalType) {
+        val consumption = SocketConsumption.state as DecimalType
+
+        if (consumption.doubleValue > 150) {
+            logInfo("Energy", "Високе споживання розетки: " + consumption + " Вт")
+        }
+
+        // Автоматичне вимкнення при перевищенні 200 Вт
+        if (consumption.doubleValue > 200) {
+            logWarn("Energy", "Критичне споживання! Вимкнення розетки")
+            SmartSocket.sendCommand(OFF)
+        }
+    }
+end
